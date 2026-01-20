@@ -1,9 +1,7 @@
 import axios from 'axios'
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
-
 const api = axios.create({
-  baseURL,
+  baseURL: import.meta.env.VITE_API_BASE_URL,
 })
 
 api.interceptors.request.use(
@@ -26,9 +24,26 @@ api.interceptors.response.use(
     if (status === 401) {
       localStorage.removeItem('token')
 
+      // Friendly message for the next page load.
+      sessionStorage.setItem(
+        'auth_error',
+        'Your session has expired. Please login again.',
+      )
+
       // Keep it framework-agnostic (works outside React render cycle)
-      if (window.location.pathname !== '/') {
-        window.location.assign('/')
+      if (window.location.pathname !== '/login') {
+        window.location.assign('/login')
+      }
+    }
+
+    if (status === 403) {
+      sessionStorage.setItem(
+        'auth_error',
+        'Access denied (403). You don’t have permission to perform this action.',
+      )
+
+      if (window.location.pathname !== '/unauthorized') {
+        window.location.assign('/unauthorized')
       }
     }
 

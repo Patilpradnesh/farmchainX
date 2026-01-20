@@ -1,161 +1,77 @@
-:root {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color: #111827;
-  background: #f3f4f6;
+@config "../tailwind.config.js";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Small global polish to match "real app" feel */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-* {
-  box-sizing: border-box;
+::selection {
+  background: color-mix(in oklab, hsl(var(--p)) 28%, transparent);
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
+@layer base {
+  body {
+    @apply bg-base-200 text-base-content font-sans;
+  }
+
+  :focus-visible {
+    outline: 2px solid color-mix(in oklab, hsl(var(--p)) 60%, transparent);
+    outline-offset: 2px;
+    border-radius: 0.75rem;
+  }
 }
 
-a {
-  color: inherit;
+/* Theme polish (rounded corners, consistent spacing) */
+[data-theme='farmxchain'] {
+  --rounded-box: 1rem;
+  --rounded-btn: 0.75rem;
+  --rounded-badge: 0.75rem;
+  --tab-radius: 0.75rem;
 }
 
-.app {
-  min-height: 100vh;
+[data-theme='farmxchainDark'] {
+  --rounded-box: 1rem;
+  --rounded-btn: 0.75rem;
+  --rounded-badge: 0.75rem;
+  --tab-radius: 0.75rem;
 }
 
-.container {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 16px;
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
 }
 
-.navbar {
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, -6px, 0) scale(0.98);
+  }
 }
 
-.navbar__inner {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+.toast-item {
+  animation: toast-in 180ms ease-out;
 }
 
-.navbar__brand {
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.navbar__actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.page {
-  padding: 8px 0;
-}
-
-.page__title {
-  margin: 12px 0 16px;
-  font-size: 22px;
-}
-
-.card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 16px;
-}
-
-.form {
-  display: grid;
-  gap: 12px;
-  max-width: 460px;
-}
-
-.field {
-  display: grid;
-  gap: 6px;
-}
-
-.field__label {
-  font-size: 14px;
-  color: #374151;
-}
-
-.field__input {
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font: inherit;
-  background: #ffffff;
-}
-
-.btn {
-  padding: 10px 12px;
-  border: 1px solid #111827;
-  border-radius: 8px;
-  background: #111827;
-  color: #ffffff;
-  font: inherit;
-  cursor: pointer;
-}
-
-.btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.btn--ghost {
-  background: transparent;
-  color: #111827;
-  border-color: #d1d5db;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.alert {
-  margin: 0;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #fecaca;
-  background: #fef2f2;
-  color: #991b1b;
-}
-
-.alert--success {
-  border-color: #bbf7d0;
-  background: #f0fdf4;
-  color: #166534;
-}
-
-.muted {
-  color: #6b7280;
-  margin: 0;
-}
-
-.tableWrap {
-  overflow-x: auto;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table th,
-.table td {
-  text-align: left;
-  padding: 10px 8px;
-  border-bottom: 1px solid #e5e7eb;
-  vertical-align: top;
+.toast-item[data-leaving='true'] {
+  animation: toast-out 160ms ease-in forwards;
 }

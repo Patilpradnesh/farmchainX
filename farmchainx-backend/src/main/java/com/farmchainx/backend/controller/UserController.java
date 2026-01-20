@@ -14,6 +14,10 @@ public class UserController {
         this.farmerService = farmerService;
     }
 
+    /**
+     * Farmer onboarding (after registration)
+     * Accessible to FARMER role
+     */
     @PostMapping("/farmer/onboard")
     public Farmer onboardFarmer(
             @RequestParam Long userId,
@@ -22,13 +26,4 @@ public class UserController {
     ) {
         return farmerService.onboardFarmer(userId, farmLocation, cropType);
     }
-
-    @PutMapping("/admin/approve")
-    public String approveUser(
-            @RequestParam Long userId
-    ) {
-        farmerService.approveUser(userId);
-        return "User approved successfully";
-    }
-
 }

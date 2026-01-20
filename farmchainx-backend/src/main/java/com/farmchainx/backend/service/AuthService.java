@@ -52,6 +52,7 @@ public class AuthService {
     }
 
     public String loginAndGetToken(String email, String rawPassword) {
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
 
@@ -59,6 +60,11 @@ public class AuthService {
             throw new RuntimeException("Invalid credentials");
         }
 
-        return jwtUtil.generateToken(email);
+        return jwtUtil.generateToken(
+                user.getEmail(),
+                user.getRole().name(),
+                user.getStatus().name()
+        );
     }
+
 }
