@@ -1,7 +1,9 @@
 package com.farmchainx.backend.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import com.farmchainx.backend.enums.CropState;
+import com.farmchainx.backend.enums.Role;
 
 @Entity
 @Table(name = "crops")
@@ -11,34 +13,61 @@ public class Crop {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String cropName;
-    private int quantity;
-    private LocalDate harvestDate;
 
-    private String certificatePath;
+    @Column(nullable = false)
+    private Double quantity;
+
+    @Column(nullable = false)
+    private LocalDateTime harvestDate;
+
+    @Column(nullable = false)
+    private String location;
+
+    private String certificateRef; // IPFS-ready
+
+    @Column(nullable = false, unique = true)
     private String blockchainHash;
 
-    @ManyToOne
-    @JoinColumn(name = "farmer_id", nullable = false)
-    private Farmer farmer;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "current_owner_id", nullable = false)
+    private User currentOwner;
 
-    public Long getId() { return id; }
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role currentOwnerRole;
 
-    public String getCropName() { return cropName; }
-    public void setCropName(String cropName) { this.cropName = cropName; }
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CropState cropState;
 
-    public int getQuantity() { return quantity; }
-    public void setQuantity(int quantity) { this.quantity = quantity; }
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    public LocalDate getHarvestDate() { return harvestDate; }
-    public void setHarvestDate(LocalDate harvestDate) { this.harvestDate = harvestDate; }
+    // Constructors, getters, setters
 
-    public String getCertificatePath() { return certificatePath; }
-    public void setCertificatePath(String certificatePath) { this.certificatePath = certificatePath; }
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 
-    public String getBlockchainHash() { return blockchainHash; }
-    public void setBlockchainHash(String blockchainHash) { this.blockchainHash = blockchainHash; }
+    public void transitionTo(CropState newState, User performedBy) {
+        if (!isValidTransition(newState)) {
+            throw new IllegalStateException("Invalid transition from " + cropState + " to " + newState);
+        }
+        // History logging handled in service
+        this.cropState = newState;
+    }
 
-    public Farmer getFarmer() { return farmer; }
-    public void setFarmer(Farmer farmer) { this.farmer = farmer; }
+    private boolean isValidTransition(CropState newState) {
+        switch (cropState) {
+            case CREATED: return newState == CropState.LISTED;
+            case LISTED: return newState == CropState.ORDERED;
+            case ORDERED: return newState == CropState.SHIPPED;
+            case SHIPPED: return newState == CropState.DELIVERED;
+            case DELIVERED: return newState == CropState.CLOSED;
+            default: return false;
+        }
+    }
 }

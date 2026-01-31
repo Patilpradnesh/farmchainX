@@ -1,49 +1,42 @@
 package com.farmchainx.backend.controller;
 
-import com.farmchainx.backend.entity.Farmer;
-import com.farmchainx.backend.repository.FarmerRepository;
+import com.farmchainx.backend.dto.LoginRequest;
+import com.farmchainx.backend.dto.RegisterRequest;
+import com.farmchainx.backend.dto.AuthResponse;
+import com.farmchainx.backend.enums.Role;
 import com.farmchainx.backend.service.AuthService;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
-    private final FarmerRepository farmerRepository;
 
-    public AuthController(AuthService authService,
-                          FarmerRepository farmerRepository) {
+    public AuthController(AuthService authService) {
         this.authService = authService;
-        this.farmerRepository = farmerRepository;
-    }
-
-    @PostMapping("/register/farmer")
-    public String registerFarmer(@RequestBody Map<String, String> req) {
-        authService.registerFarmer(
-                req.get("name"),
-                req.get("email"),
-                req.get("password"),
-                req.get("farmLocation"),
-                req.get("cropType")
-        );
-        return "Farmer registered";
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody Map<String, String> req) {
-        return authService.loginAndGetToken(
-                req.get("email"),
-                req.get("password")
+    public AuthResponse login(@RequestBody LoginRequest request) {
+
+        var result = authService.loginWithUser(request);
+
+        return new AuthResponse(
+                result.getToken(),
+                result.getUser().getRole().name(),
+                result.getUser().getStatus().name()
         );
     }
 
-    // ✅ MISSING LOGIC — NOW ADDED
-    @GetMapping("/farmers")
-    public List<Farmer> getAllFarmers() {
-        return farmerRepository.findAll();
+    @PostMapping("/register/farmer")
+    public void registerFarmer(@RequestBody RegisterRequest request) {
+        authService.register(request, Role.FARMER);
+    }
+
+    @PostMapping("/register/{role}")
+    public void register(@PathVariable Role role,
+                         @RequestBody RegisterRequest request) {
+        authService.register(request, role);
     }
 }

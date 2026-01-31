@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { UserPlus, Sprout, MapPin, Wheat } from 'lucide-react'
+import { Eye, EyeOff, UserPlus, ShieldCheck } from 'lucide-react'
 import { registerFarmer } from '../api/auth'
 
 export default function Register() {
@@ -9,12 +9,24 @@ export default function Register() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [farmLocation, setFarmLocation] = useState('')
   const [cropType, setCropType] = useState('')
 
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const canSubmit = useMemo(() => {
+    return (
+      name.trim().length >= 2 &&
+      email.trim().length > 3 &&
+      password.length >= 4 &&
+      farmLocation.trim().length >= 2 &&
+      cropType.trim().length >= 2 &&
+      !loading
+    )
+  }, [name, email, password, farmLocation, cropType, loading])
 
   const onSubmit = async (e) => {
     e.preventDefault()
@@ -42,149 +54,158 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-10rem)] grid lg:grid-cols-2 gap-8 items-center">
-      <div className="hidden lg:block">
-        <div className="max-w-xl">
-          <div className="badge badge-secondary badge-outline">Farmer Registration</div>
-          <h1 className="mt-4 text-5xl font-extrabold tracking-tight leading-tight">Create your account</h1>
-          <p className="mt-3 text-lg text-base-content/70">
-            Register as a farmer and submit your details for admin approval.
-          </p>
-
-          <div className="mt-8 grid gap-4">
-            <Hint icon={<Sprout size={18} />} title="On-chain traceability" text="Crops are registered and can be verified later." />
-            <Hint icon={<MapPin size={18} />} title="Origin included" text="Store farm location as part of the record." />
-            <Hint icon={<Wheat size={18} />} title="Crop info" text="Capture primary crop type for your profile." />
-          </div>
-        </div>
-      </div>
-
-      <div className="w-full">
-        <div className="mx-auto w-full max-w-lg">
-          <div className="mb-6">
-            <h2 className="text-3xl font-bold tracking-tight">Create your account</h2>
-            <p className="text-base-content/70">
-              Farmers require admin approval before accessing the dashboard.
+    <div className="min-h-[calc(100vh-4rem)] bg-base-200">
+      <div className="mx-auto w-full max-w-6xl px-4 py-10">
+        <div className="mx-auto w-full max-w-2xl">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 rounded-full border border-base-300 bg-base-100 px-3 py-1 text-sm text-base-content/70">
+              <ShieldCheck size={16} className="text-primary" />
+              Farmer registration
+            </div>
+            <h1 className="mt-4 text-3xl font-bold tracking-tight">Create your farmer account</h1>
+            <p className="mt-2 text-base-content/70">
+              Submit your details for admin approval. Once approved, you can add crop batches.
             </p>
           </div>
 
-          <form className="card bg-base-100 shadow-sm border border-base-200" onSubmit={onSubmit}>
-            <div className="card-body gap-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Name</span>
-                </label>
-                <input
-                  className="input input-bordered"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Your name"
-                  required
-                />
-              </div>
+          <div className="card fx-card border-t-4 border-t-primary">
+            <div className="card-body p-8 gap-6">
+              <ul className="steps steps-horizontal w-full">
+                <li className="step step-primary">Account</li>
+                <li className="step step-primary">Farm details</li>
+                <li className="step">Approval</li>
+              </ul>
 
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Email</span>
-                </label>
-                <input
-                  className="input input-bordered"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  autoComplete="email"
-                  required
-                />
-              </div>
-            </div>
+              <form className="space-y-6" onSubmit={onSubmit}>
+                <section className="space-y-4">
+                  <div>
+                    <div className="text-lg font-semibold">Step 1: Account</div>
+                    <p className="text-sm text-base-content/70">Use a real email address so admins can verify you.</p>
+                  </div>
 
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Password</span>
-              </label>
-              <input
-                className="input input-bordered"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Create a password"
-                autoComplete="new-password"
-                required
-              />
-            </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text font-medium">Name</span>
+                      </label>
+                      <input
+                        className="input input-bordered input-lg"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Your full name"
+                        required
+                      />
+                    </div>
 
-            <div className="rounded-box border border-base-300 bg-base-200 p-4">
-              <div className="font-semibold mb-3">Farmer details</div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Farm Location</span>
-                  </label>
-                  <input
-                    className="input input-bordered"
-                    value={farmLocation}
-                    onChange={(e) => setFarmLocation(e.target.value)}
-                    placeholder="e.g., Pune, Maharashtra"
-                    required
-                  />
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text font-medium">Email</span>
+                      </label>
+                      <input
+                        className="input input-bordered input-lg"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        autoComplete="email"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text font-medium">Password</span>
+                    </label>
+                    <div className="join w-full">
+                      <input
+                        className="input input-bordered input-lg join-item w-full"
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Create a password"
+                        autoComplete="new-password"
+                        required
+                      />
+                      <button
+                        className="btn join-item btn-outline"
+                        type="button"
+                        onClick={() => setShowPassword((s) => !s)}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                    <div className="label">
+                      <span className="label-text-alt text-base-content/60">Use a strong password to protect your account.</span>
+                    </div>
+                  </div>
+                </section>
+
+                <div className="divider my-0" />
+
+                <section className="space-y-4">
+                  <div>
+                    <div className="text-lg font-semibold">Step 2: Farm details</div>
+                    <p className="text-sm text-base-content/70">These details help admins verify your account and improve traceability.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text font-medium">Farm location</span>
+                      </label>
+                      <input
+                        className="input input-bordered input-lg"
+                        value={farmLocation}
+                        onChange={(e) => setFarmLocation(e.target.value)}
+                        placeholder="e.g., Pune, Maharashtra"
+                        required
+                      />
+                    </div>
+
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text font-medium">Primary crop</span>
+                      </label>
+                      <input
+                        className="input input-bordered input-lg"
+                        value={cropType}
+                        onChange={(e) => setCropType(e.target.value)}
+                        placeholder="e.g., Wheat"
+                        required
+                      />
+                    </div>
+                  </div>
+                </section>
+
+                {error ? (
+                  <div className="alert alert-error">
+                    <span>{error}</span>
+                  </div>
+                ) : null}
+                {success ? (
+                  <div className="alert alert-success">
+                    <span>{success}</span>
+                  </div>
+                ) : null}
+
+                <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+                  <p className="text-sm text-base-content/70">
+                    Already have an account?{' '}
+                    <Link className="link link-primary" to="/login">
+                      Login
+                    </Link>
+                  </p>
+                  <button className="btn btn-primary btn-lg" type="submit" disabled={!canSubmit}>
+                    <UserPlus size={18} />
+                    {loading ? 'Submitting…' : 'Submit for approval'}
+                  </button>
                 </div>
-
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Primary Crop</span>
-                  </label>
-                  <input
-                    className="input input-bordered"
-                    value={cropType}
-                    onChange={(e) => setCropType(e.target.value)}
-                    placeholder="e.g., Wheat"
-                    required
-                  />
-                </div>
-              </div>
+              </form>
             </div>
-
-            {error ? (
-              <div className="alert alert-error">
-                <span>{error}</span>
-              </div>
-            ) : null}
-            {success ? (
-              <div className="alert alert-success">
-                <span>{success}</span>
-              </div>
-            ) : null}
-
-            <button className="btn btn-primary" type="submit" disabled={loading}>
-              <UserPlus size={18} />
-              {loading ? 'Creating…' : 'Register'}
-            </button>
-
-            <p className="text-sm text-base-content/70">
-              Already have an account?{' '}
-              <Link className="link link-primary" to="/login">
-                Login
-              </Link>
-            </p>
-            </div>
-          </form>
+          </div>
         </div>
-      </div>
-    </div>
-  )
-}
-
-function Hint({ icon, title, text }) {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
-        {icon}
-      </div>
-      <div>
-        <div className="font-semibold">{title}</div>
-        <div className="text-sm text-base-content/70">{text}</div>
       </div>
     </div>
   )

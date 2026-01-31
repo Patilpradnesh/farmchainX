@@ -5,6 +5,10 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    watch: {
+      usePolling: true,
+      interval: 250,
+    },
     proxy: {
       // Avoid CORS in dev: frontend calls /api/** and Vite proxies to Spring Boot.
       '/api': {

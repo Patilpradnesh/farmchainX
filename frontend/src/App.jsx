@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import ProtectedRoute from './components/ProtectedRoute'
 import Login from './pages/Login'
@@ -12,43 +12,52 @@ import PendingApproval from './pages/PendingApproval'
 import ApprovedFarmerRoute from './components/ApprovedFarmerRoute'
 import FarmerDashboard from './pages/FarmerDashboard'
 import AdminHome from './pages/AdminHome'
+import AdminFarmerVerification from './pages/AdminFarmerVerification'
+import AdminUsers from './pages/AdminUsers'
 import Footer from './components/Footer'
+
+function PageContainer({ children }) {
+  return <div className="max-w-6xl mx-auto w-full px-4 py-8">{children}</div>
+}
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-base-200">
-      <div className="pointer-events-none fixed inset-0 opacity-[0.35] [background:radial-gradient(80%_60%_at_50%_0%,hsl(var(--p))_0%,transparent_60%),radial-gradient(60%_40%_at_80%_20%,hsl(var(--s))_0%,transparent_55%),radial-gradient(70%_50%_at_20%_10%,hsl(var(--a))_0%,transparent_60%)]" />
-
-      <div className="relative">
+    <div className="min-h-screen bg-base-200 flex flex-col">
+      <div className="relative flex flex-col min-h-screen">
         <Navbar />
-        <main className="max-w-6xl mx-auto px-4 py-8">
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/unauthorized" element={<Unauthorized />} />
 
-          <Route element={<ProtectedRoute />}>
-            <Route path="/pending-approval" element={<PendingApproval />} />
-            <Route path="/crop/:id" element={<CropDetails />} />
-          </Route>
+        <main className="flex-1 pt-16">
+          <Routes>
+            {/* Auth (kept full-page, no extra wrapper container) */}
+            <Route path="/" element={<Login />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/unauthorized" element={<PageContainer><Unauthorized /></PageContainer>} />
 
-          <Route element={<ApprovedFarmerRoute />}>
-            <Route path="/dashboard" element={<FarmerDashboard />} />
-            <Route path="/crops/new" element={<CropNew />} />
-          </Route>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/pending-approval" element={<PageContainer><PendingApproval /></PageContainer>} />
+              <Route path="/crop/:id" element={<PageContainer><CropDetails /></PageContainer>} />
+            </Route>
 
-          <Route element={<ProtectedRoute roles={['FARMER']} />}>
-            <Route path="/farmer/profile" element={<FarmerProfile />} />
-          </Route>
+            <Route element={<ApprovedFarmerRoute />}>
+              <Route path="/dashboard" element={<PageContainer><FarmerDashboard /></PageContainer>} />
+              <Route path="/crops/new" element={<PageContainer><CropNew /></PageContainer>} />
+            </Route>
 
-          <Route element={<ProtectedRoute roles={['ADMIN']} />}>
-            <Route path="/admin" element={<AdminHome />} />
-          </Route>
+            <Route element={<ProtectedRoute roles={['FARMER']} />}>
+              <Route path="/farmer/profile" element={<PageContainer><FarmerProfile /></PageContainer>} />
+            </Route>
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            <Route element={<ProtectedRoute roles={['ADMIN']} />}>
+              <Route path="/admin" element={<PageContainer><AdminHome /></PageContainer>} />
+              <Route path="/admin/farmers" element={<PageContainer><AdminFarmerVerification /></PageContainer>} />
+              <Route path="/admin/users" element={<PageContainer><AdminUsers /></PageContainer>} />
+            </Route>
+
+            <Route path="*" element={<PageContainer><NotFound /></PageContainer>} />
+          </Routes>
         </main>
+
         <Footer />
       </div>
     </div>

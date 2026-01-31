@@ -1,4 +1,4 @@
-package com.farmchainx.backend.entity;
+package com.farmchainx.backend.enums;
 
 public enum Status {
     PENDING,

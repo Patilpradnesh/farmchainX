@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, LogIn, ShieldCheck, Boxes, ScanSearch } from 'lucide-react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Eye, EyeOff, LogIn, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../context/useAuth'
 import { getDashboardPathForUser } from '../utils/routes'
 
 export default function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { login, refreshMe } = useAuth()
 
   const [email, setEmail] = useState('')
@@ -34,7 +35,14 @@ export default function Login() {
     try {
       await login({ email: email.trim(), password })
       const me = await refreshMe()
-      const to = getDashboardPathForUser(me)
+      const from = location?.state?.from
+      const safeFrom =
+        typeof from === 'string' &&
+        from.startsWith('/') &&
+        !from.startsWith('/login') &&
+        !from.startsWith('/register')
+
+      const to = safeFrom ? from : getDashboardPathForUser(me)
       navigate(to, { replace: true })
     } catch (err) {
       const message =
@@ -48,113 +56,94 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-10rem)] grid lg:grid-cols-2 gap-8 items-center">
-      <div className="hidden lg:block">
-        <div className="max-w-xl">
-          <div className="badge badge-primary badge-outline">Secure Supply Chain</div>
-          <h1 className="mt-4 text-5xl font-extrabold tracking-tight leading-tight">
-            FarmXChain
-          </h1>
-          <p className="mt-3 text-lg text-base-content/70">
-            A professional dashboard for crop registration and blockchain-backed traceability.
-          </p>
-
-          <div className="mt-8 grid gap-4">
-            <Feature icon={<ShieldCheck size={18} />} title="Verified roles" text="Admin and farmer access are enforced by JWT claims." />
-            <Feature icon={<Boxes size={18} />} title="Batch tracking" text="Register crop batches with origin and certificate path." />
-            <Feature icon={<ScanSearch size={18} />} title="Traceability" text="Open a batch and verify its chain record instantly." />
-          </div>
-        </div>
-      </div>
-
-      <div className="w-full">
+    <div className="min-h-[calc(100vh-4rem)] bg-base-200">
+      <div className="mx-auto w-full max-w-6xl px-4 py-10">
         <div className="mx-auto w-full max-w-md">
-          <div className="mb-6">
-            <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
-            <p className="text-base-content/70">Sign in to continue.</p>
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-base-300 bg-base-100 px-3 py-1 text-sm text-base-content/70">
+              <ShieldCheck size={16} className="text-primary" />
+              Trusted access
+            </div>
+            <h1 className="mt-4 text-3xl font-bold tracking-tight">Welcome back</h1>
+            <p className="mt-2 text-base-content/70">
+              Sign in to manage crops and verify traceability.
+            </p>
+
+            {/* TEMP: visibility check (remove later) */}
+            <div id="red-test-box" className="mt-4 rounded-xl bg-red-600 text-white px-4 py-3 text-sm font-semibold">
+              RED TEST BOX — if you can see this, UI changes are reflecting.
+            </div>
           </div>
 
-          <form className="card bg-base-100 shadow-sm border border-base-200" onSubmit={onSubmit} noValidate>
-            <div className="card-body gap-4">
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Email</span>
-              </label>
-              <input
-                className="input input-bordered"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                autoComplete="email"
-                inputMode="email"
-                required
-              />
-            </div>
-
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Password</span>
-              </label>
-              <div className="join w-full">
+          <form className="card fx-card border-t-4 border-t-primary" onSubmit={onSubmit} noValidate>
+            <div className="card-body gap-5 p-8">
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Email</span>
+                </label>
                 <input
-                  className="input input-bordered join-item w-full"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                  aria-invalid={error ? 'true' : 'false'}
-                  aria-describedby={error ? 'login-error' : undefined}
+                  className="input input-bordered input-lg"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  inputMode="email"
                   required
                 />
-                <button
-                  className="btn join-item btn-outline"
-                  type="button"
-                  onClick={() => setShowPassword((s) => !s)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
               </div>
-            </div>
 
-            {error ? (
-              <div id="login-error" className="alert alert-error" role="alert" aria-live="polite">
-                <span>{error}</span>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Password</span>
+                </label>
+                <div className="join w-full">
+                  <input
+                    className="input input-bordered input-lg join-item w-full"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    aria-invalid={error ? 'true' : 'false'}
+                    aria-describedby={error ? 'login-error' : undefined}
+                    required
+                  />
+                  <button
+                    className="btn join-item btn-outline"
+                    type="button"
+                    onClick={() => setShowPassword((s) => !s)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
-            ) : null}
 
-            <button className="btn btn-primary" type="submit" disabled={!canSubmit}>
-              <LogIn size={18} />
-              {loading ? 'Logging in…' : 'Login'}
-            </button>
+              {error ? (
+                <div id="login-error" className="alert alert-error" role="alert" aria-live="polite">
+                  <span>{error}</span>
+                </div>
+              ) : null}
 
-            <div className="divider">OR</div>
+              <button className="btn btn-primary btn-lg" type="submit" disabled={!canSubmit}>
+                <LogIn size={18} />
+                {loading ? 'Logging in…' : 'Login'}
+              </button>
 
-            <p className="text-sm text-base-content/70">
-              New user?{' '}
-              <Link className="link link-primary" to="/register">
-                Create an account
-              </Link>
-            </p>
+              <div className="text-sm text-base-content/70 text-center">
+                New farmer?{' '}
+                <Link className="link link-primary" to="/register">
+                  Register
+                </Link>
+              </div>
             </div>
           </form>
-        </div>
-      </div>
-    </div>
-  )
-}
 
-function Feature({ icon, title, text }) {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-        {icon}
-      </div>
-      <div>
-        <div className="font-semibold">{title}</div>
-        <div className="text-sm text-base-content/70">{text}</div>
+          <p className="mt-4 text-xs text-base-content/60 text-center">
+            FarmXChain helps you track crop batches with tamper-evident records.
+          </p>
+        </div>
       </div>
     </div>
   )

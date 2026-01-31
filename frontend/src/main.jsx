@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
@@ -14,13 +14,22 @@ document.documentElement.setAttribute(
   storedMode === 'dark' ? 'farmxchainDark' : 'farmxchain',
 )
 
+// Minimal router that mounts the existing App component.
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <App />,
+  },
+])
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ToastProvider>
       <AuthProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
+        <RouterProvider
+          router={router}
+          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        />
       </AuthProvider>
     </ToastProvider>
   </StrictMode>,

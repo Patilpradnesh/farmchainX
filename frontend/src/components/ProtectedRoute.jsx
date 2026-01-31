@@ -32,16 +32,16 @@ export default function ProtectedRoute({ roles }) {
 
   // If user is pending approval, block protected actions and show a friendly page.
   const status = normalizeStatus(user?.status)
-  const role = normalizeRole(user?.role)
+  const currentRole = normalizeRole(user?.role)
 
-  if (role === 'FARMER' && status === 'PENDING') {
+  // Admins must be able to access the admin portal to approve others.
+  if (status === 'PENDING' && currentRole !== 'ADMIN') {
     const path = location.pathname
-    const allowed = path === '/pending-approval' || path.startsWith('/crop/')
+    const allowed = path === '/pending-approval'
     if (!allowed) return <Navigate to="/pending-approval" replace />
   }
 
   const required = Array.isArray(roles) ? roles.map(normalizeRole) : null
-  const currentRole = normalizeRole(user?.role)
 
   if (required?.length && !required.includes(currentRole)) {
     return <Navigate to="/unauthorized" replace />

@@ -1,7 +1,8 @@
 package com.farmchainx.backend.repository;
 
-import com.farmchainx.backend.entity.Status;
 import com.farmchainx.backend.entity.User;
+import com.farmchainx.backend.enums.Role;
+import com.farmchainx.backend.enums.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -11,9 +12,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
 
-    // ✅ REQUIRED for AdminController
     List<User> findByStatus(Status status);
 
-    // ✅ REQUIRED for role-based admin listing
-    List<User> findByRoleAndStatus(String role, Status status);
+    List<User> findByRole(Role role);
+
+    List<User> findByRoleAndStatus(Role role, Status status);
 }

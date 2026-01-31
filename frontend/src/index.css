@@ -21,13 +21,35 @@ body {
 
 @layer base {
   body {
-    @apply bg-base-200 text-base-content font-sans;
+    background-color: hsl(var(--b2));
+    color: hsl(var(--bc));
+    font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
   }
 
   :focus-visible {
     outline: 2px solid color-mix(in oklab, hsl(var(--p)) 60%, transparent);
     outline-offset: 2px;
     border-radius: 0.75rem;
+  }
+}
+
+@layer components {
+  .fx-card {
+    background: hsl(var(--b1));
+    border: 1px solid hsl(var(--b3));
+    border-radius: var(--rounded-box);
+    box-shadow:
+      0 1px 2px color-mix(in oklab, hsl(var(--n)) 10%, transparent),
+      0 6px 16px -12px color-mix(in oklab, hsl(var(--n)) 18%, transparent);
+  }
+
+  .fx-subtle {
+    color: color-mix(in oklab, hsl(var(--bc)) 72%, transparent);
+  }
+
+  .fx-title {
+    font-weight: 800;
+    letter-spacing: -0.02em;
   }
 }
 

@@ -58,6 +58,7 @@ export default function Navbar() {
 
   const role = String(user?.role ?? '').toUpperCase()
   const status = String(user?.status ?? '').toUpperCase()
+  const isAdmin = role === 'ADMIN'
   const isFarmer = role === 'FARMER'
   const isApprovedFarmer = isFarmer && status === 'APPROVED'
 
@@ -69,6 +70,12 @@ export default function Navbar() {
       {isAuthenticated ? (
         <>
           <MenuLink to={dashboardTo} icon={<LayoutDashboard size={16} />}>Dashboard</MenuLink>
+          {isAdmin ? (
+            <>
+              <MenuLink to="/admin/farmers" icon={<User size={16} />}>Verify Farmers</MenuLink>
+              <MenuLink to="/admin/users" icon={<User size={16} />}>Users</MenuLink>
+            </>
+          ) : null}
           {isApprovedFarmer ? <MenuLink to="/crops/new" icon={<PlusCircle size={16} />}>Add Crop</MenuLink> : null}
         </>
       ) : (
@@ -81,8 +88,8 @@ export default function Navbar() {
   )
 
   return (
-    <header className="sticky top-0 z-50 border-b border-base-200 bg-base-100/85 backdrop-blur supports-backdrop-filter:bg-base-100/70">
-      <div className="navbar max-w-6xl mx-auto px-4">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-base-200 bg-base-100/95 backdrop-blur">
+      <div className="navbar h-16 max-w-6xl mx-auto px-4">
         <div className="navbar-start">
           <div className="dropdown">
             <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden" aria-label="Open menu">
@@ -107,6 +114,12 @@ export default function Navbar() {
             {isAuthenticated ? (
               <>
                 <PillLink to={dashboardTo} icon={<LayoutDashboard size={16} />}>Dashboard</PillLink>
+                {isAdmin ? (
+                  <>
+                    <PillLink to="/admin/farmers" icon={<User size={16} />}>Verify</PillLink>
+                    <PillLink to="/admin/users" icon={<User size={16} />}>Users</PillLink>
+                  </>
+                ) : null}
                 {isApprovedFarmer ? (
                   <PillLink to="/crops/new" icon={<PlusCircle size={16} />}>Add crop</PillLink>
                 ) : null}
@@ -152,6 +165,20 @@ export default function Navbar() {
                       <LayoutDashboard size={16} /> Dashboard
                     </Link>
                   </li>
+                  {isAdmin ? (
+                    <>
+                      <li>
+                        <Link to="/admin/farmers">
+                          <User size={16} /> Verify Farmers
+                        </Link>
+                      </li>
+                      <li>
+                        <Link to="/admin/users">
+                          <User size={16} /> Users
+                        </Link>
+                      </li>
+                    </>
+                  ) : null}
                   {isFarmer ? (
                     <li>
                       <Link to="/farmer/profile">

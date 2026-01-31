@@ -133,42 +133,42 @@ export default function Dashboard() {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="card bg-base-100 border border-base-200 shadow-sm">
-          <div className="card-body">
+        <div className="card fx-card">
+          <div className="card-body p-6">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                 <ShieldCheck size={18} />
               </div>
               <div>
-                <div className="text-sm text-base-content/70">Account status</div>
+                <div className="text-sm fx-subtle">Account status</div>
                 <div className="text-2xl font-bold">{stats.status}</div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="card bg-base-100 border border-base-200 shadow-sm">
-          <div className="card-body">
+        <div className="card fx-card">
+          <div className="card-body p-6">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center">
                 <Users size={18} />
               </div>
               <div>
-                <div className="text-sm text-base-content/70">Farmers</div>
+                <div className="text-sm fx-subtle">Farmers</div>
                 <div className="text-2xl font-bold">{isAdmin ? stats.totalFarmers : '—'}</div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="card bg-base-100 border border-base-200 shadow-sm">
-          <div className="card-body">
+        <div className="card fx-card">
+          <div className="card-body p-6">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-warning/15 text-warning flex items-center justify-center">
                 <Clock size={18} />
               </div>
               <div>
-                <div className="text-sm text-base-content/70">Pending approvals</div>
+                <div className="text-sm fx-subtle">Pending approvals</div>
                 <div className="text-2xl font-bold">{isAdmin ? stats.pending ?? '—' : '—'}</div>
               </div>
             </div>
@@ -197,7 +197,7 @@ export default function Dashboard() {
       ) : null}
 
       {isAdmin && !loading && !error ? (
-        <div className="card bg-base-100 shadow-sm border border-base-200">
+        <div className="card fx-card">
           <div className="card-body">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div className="text-base-content/70">
@@ -207,7 +207,7 @@ export default function Dashboard() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="table table-zebra">
+              <table className="table table-zebra table-hover table-pin-rows">
                 <thead>
                   <tr>
                     <th>Name</th>
@@ -245,7 +245,7 @@ export default function Dashboard() {
       ) : null}
 
       {!isAdmin ? (
-        <div className="card bg-base-100 shadow-sm border border-base-200">
+        <div className="card fx-card">
           <div className="card-body">
             <h2 className="card-title">Next</h2>
             <p className="text-base-content/70">
