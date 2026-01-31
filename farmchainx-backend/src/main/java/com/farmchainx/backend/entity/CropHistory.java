@@ -51,6 +51,15 @@ public class CropHistory {
 
     // Getters only (no setters)
 
+    public Long getId() { return id; }
+    public Crop getCrop() { return crop; }
+    public String getAction() { return action; }
+    public CropState getFromState() { return fromState; }
+    public CropState getToState() { return toState; }
+    public User getPerformedBy() { return performedBy; }
+    public Role getRole() { return role; }
+    public LocalDateTime getTimestamp() { return timestamp; }
+
     @PrePersist
     protected void onCreate() {
         timestamp = LocalDateTime.now();

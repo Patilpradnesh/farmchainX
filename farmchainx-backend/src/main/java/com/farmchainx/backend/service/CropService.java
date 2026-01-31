@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.farmchainx.backend.enums.CropState;
 import com.farmchainx.backend.entity.CropHistory;
 import com.farmchainx.backend.repository.CropHistoryRepository;
+
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -112,12 +114,16 @@ public class CropService {
         Crop crop = cropRepository.findByBlockchainHash(hash)
                 .orElseThrow(() -> new RuntimeException("Crop not found"));
 
+        List<CropHistory> history = cropHistoryRepository.findByCropIdOrderByTimestampAsc(crop.getId());
+
         return new CropTraceResponse(
                 crop.getCropName(),
                 crop.getBlockchainHash(),
                 crop.getCropState().name(),
                 crop.getCreatedAt().toString(),
-                crop.getCurrentOwner().getEmail()
+                crop.getCurrentOwner().getEmail(),
+                history.stream().map(h -> h.getAction() + " at " + h.getTimestamp()).toList()
         );
     }
+
 }

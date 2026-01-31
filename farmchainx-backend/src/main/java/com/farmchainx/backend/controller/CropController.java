@@ -6,11 +6,11 @@ import com.farmchainx.backend.dto.CropRequest;
 import com.farmchainx.backend.dto.CropTraceResponse;
 import com.farmchainx.backend.entity.Crop;
 import com.farmchainx.backend.service.CropService;
-import org.springframework.security.core.Authentication;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/crops")
+@RequestMapping("/api/v1/crops")
 public class CropController {
 
     private final CropService cropService;
@@ -19,10 +19,16 @@ public class CropController {
         this.cropService = cropService;
     }
 
-    @PostMapping
+    @PostMapping("/register")
     public CropCreateResponse registerCrop(@RequestBody CropCreateRequest request) {
-        String hash = cropService.registerCrop(request);
-        return new CropCreateResponse(hash);
+        Crop crop = cropService.registerCrop(request);
+        return new CropCreateResponse(crop.getId(), crop.getBlockchainHash());
+    }
+
+    @PostMapping("/add")
+    public ResponseEntity<Void> addCrop(@RequestBody CropRequest request, @RequestParam String farmerEmail) {
+        cropService.addCrop(request, farmerEmail);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/trace/{hash}")
