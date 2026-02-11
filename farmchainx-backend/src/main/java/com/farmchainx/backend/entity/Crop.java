@@ -1,9 +1,11 @@
 package com.farmchainx.backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
 import com.farmchainx.backend.enums.CropState;
 import com.farmchainx.backend.enums.Role;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "crops")
@@ -14,15 +16,20 @@ public class Crop {
     private Long id;
 
     @Column(nullable = false)
+    @NotBlank(message = "Crop name is required")
     private String cropName;
 
     @Column(nullable = false)
+    @NotNull(message = "Quantity is required")
+    @Positive(message = "Quantity must be positive")
     private Double quantity;
 
     @Column(nullable = false)
+    @NotNull(message = "Harvest date is required")
     private LocalDateTime harvestDate;
 
     @Column(nullable = false)
+    @NotBlank(message = "Location is required")
     private String location;
 
     private String certificateRef; // IPFS-ready
@@ -32,6 +39,7 @@ public class Crop {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "current_owner_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password"})
     private User currentOwner;
 
     @Enumerated(EnumType.STRING)
@@ -44,6 +52,15 @@ public class Crop {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Version
+    private Long version;
+
+
+
 
     // Constructors, getters, setters
 
@@ -74,6 +91,7 @@ public class Crop {
     public User getCurrentOwner() { return currentOwner; }
     public void setCurrentOwner(User currentOwner) { this.currentOwner = currentOwner; }
 
+
     public Role getCurrentOwnerRole() { return currentOwnerRole; }
     public void setCurrentOwnerRole(Role currentOwnerRole) { this.currentOwnerRole = currentOwnerRole; }
 
@@ -81,11 +99,21 @@ public class Crop {
     public void setCropState(CropState cropState) { this.cropState = cropState; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+
+    public Long getVersion() { return version; }
+
 
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 
     public void transitionTo(CropState newState, User performedBy) {
@@ -99,11 +127,37 @@ public class Crop {
     private boolean isValidTransition(CropState newState) {
         switch (cropState) {
             case CREATED: return newState == CropState.LISTED;
-            case LISTED: return newState == CropState.ORDERED;
-            case ORDERED: return newState == CropState.SHIPPED;
+            case LISTED: return newState == CropState.ORDERED || newState == CropState.CREATED; // Allow unlisting
+            case ORDERED: return newState == CropState.SHIPPED || newState == CropState.LISTED; // Allow cancellation
             case SHIPPED: return newState == CropState.DELIVERED;
             case DELIVERED: return newState == CropState.CLOSED;
+            case CLOSED: return false; // Terminal state
             default: return false;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Crop)) return false;
+        Crop crop = (Crop) o;
+        return id != null && id.equals(crop.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "Crop{" +
+                "id=" + id +
+                ", cropName='" + cropName + '\'' +
+                ", quantity=" + quantity +
+                ", cropState=" + cropState +
+                ", currentOwner=" + (currentOwner != null ? currentOwner.getId() : null) +
+                ", createdAt=" + createdAt +
+                '}';
     }
 }

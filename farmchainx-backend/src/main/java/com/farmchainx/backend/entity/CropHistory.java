@@ -1,5 +1,6 @@
 package com.farmchainx.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import com.farmchainx.backend.enums.CropState;
@@ -15,6 +16,7 @@ public class CropHistory {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "crop_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Crop crop;
 
     @Column(nullable = false)
@@ -30,6 +32,7 @@ public class CropHistory {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "performed_by_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password"})
     private User performedBy;
 
     @Enumerated(EnumType.STRING)
@@ -38,6 +41,9 @@ public class CropHistory {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime timestamp;
+
+    // No-arg constructor for JPA
+    public CropHistory() {}
 
     // Constructor for immutability
     public CropHistory(Crop crop, String action, CropState fromState, CropState toState, User performedBy, Role role) {

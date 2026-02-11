@@ -1,14 +1,13 @@
 package com.farmchainx.backend.controller;
 
-import com.farmchainx.backend.dto.FarmerDashboardResponse;
-import com.farmchainx.backend.dto.GenericDashboardResponse;
+import com.farmchainx.backend.dto.*;
 import com.farmchainx.backend.service.DashboardService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/dashboard")
+@RequestMapping("/api/v1/dashboard")
 public class DashboardController {
 
     private final DashboardService dashboardService;
@@ -23,18 +22,18 @@ public class DashboardController {
     }
 
     @GetMapping("/distributor")
-    public GenericDashboardResponse distributorDashboard() {
-        return new GenericDashboardResponse("Distributor dashboard not implemented yet");
+    public DistributorDashboardResponse distributorDashboard() {
+        return dashboardService.getDistributorDashboard();
     }
 
     @GetMapping("/retailer")
-    public GenericDashboardResponse retailerDashboard() {
-        return new GenericDashboardResponse("Retailer dashboard not implemented yet");
+    public RetailerDashboardResponse retailerDashboard() {
+        return dashboardService.getRetailerDashboard();
     }
 
     @GetMapping("/consumer")
-    public GenericDashboardResponse consumerDashboard() {
-        return new GenericDashboardResponse("Consumer dashboard not implemented yet");
+    public ConsumerDashboardResponse consumerDashboard() {
+        return dashboardService.getConsumerDashboard();
     }
 
 }

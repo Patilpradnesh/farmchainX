@@ -76,19 +76,26 @@ public class CropService {
 
     @Transactional
     public Crop registerCrop(CropCreateRequest request) {
+        System.out.println("🔄 CropService.registerCrop() started");
+
         // 1) Extract logged-in user email from JWT
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
+        System.out.println("   📧 Authenticated user email: " + email);
 
         // 2) Load User entity
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found: " + email));
+        System.out.println("   👤 User found - ID: " + user.getId() + ", Role: " + user.getRole());
 
         // 3) Load FarmerProfile
+        System.out.println("   🔍 Looking for FarmerProfile for user: " + email);
         FarmerProfile farmer = farmerProfileRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Farmer profile not found for user: " + email));
+        System.out.println("   🚜 FarmerProfile found - ID: " + farmer.getId());
 
         // 4) Build Crop entity
+        System.out.println("   🌱 Creating new Crop entity");
         Crop crop = new Crop();
         crop.setCropName(request.getCropName());
         crop.setQuantity(request.getQuantity());
@@ -101,9 +108,15 @@ public class CropService {
         // 5) Generate blockchain hash
         String hash = UUID.randomUUID().toString().replace("-", "");
         crop.setBlockchainHash(hash);
+        System.out.println("   🔗 Generated blockchain hash: " + hash);
 
+        System.out.println("   💾 Saving crop to database");
         Crop savedCrop = cropRepository.save(crop);
+        System.out.println("   ✅ Crop saved with ID: " + savedCrop.getId());
+
         logCropHistory(savedCrop, "CREATED", null, CropState.CREATED, user, Role.FARMER);
+        System.out.println("   📝 Crop history logged");
+
         return savedCrop;
     }
 

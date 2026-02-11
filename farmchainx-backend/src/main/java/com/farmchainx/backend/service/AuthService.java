@@ -73,9 +73,10 @@ public class AuthService {
     /**
      * Universal registration for all roles
      * All users start with PENDING status
+     * Returns LoginResult with JWT token and user data
      */
     @Transactional
-    public void register(RegisterRequest request, Role role) {
+    public LoginResult register(RegisterRequest request, Role role) {
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already registered");
@@ -96,6 +97,7 @@ public class AuthService {
                 profile.setUser(user);
                 profile.setFarmName(request.getName());
                 profile.setLocation(request.getLocation());
+                profile.setVerificationStatus(Status.PENDING);
                 farmerProfileRepository.save(profile);
             }
             case DISTRIBUTOR -> {
@@ -121,5 +123,9 @@ public class AuthService {
                 // Admin profile not required
             }
         }
+
+        // Generate JWT token and return result
+        String token = jwtUtil.generateToken(user);
+        return new LoginResult(token, user);
     }
 }

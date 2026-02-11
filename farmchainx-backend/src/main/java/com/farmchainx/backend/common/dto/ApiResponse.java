@@ -1,0 +1,43 @@
+package com.farmchainx.backend.common.dto;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+/**
+ * Standardized API Response Wrapper
+ * All API endpoints should return this format for consistency
+ */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class ApiResponse<T> {
+
+    private boolean success;
+    private String message;
+    private T data;
+    private LocalDateTime timestamp;
+    private String errorCode;
+
+    // Success response
+    public static <T> ApiResponse<T> success(T data) {
+        return new ApiResponse<>(true, "Success", data, LocalDateTime.now(), null);
+    }
+
+    public static <T> ApiResponse<T> success(String message, T data) {
+        return new ApiResponse<>(true, message, data, LocalDateTime.now(), null);
+    }
+
+    // Error response
+    public static <T> ApiResponse<T> error(String message) {
+        return new ApiResponse<>(false, message, null, LocalDateTime.now(), null);
+    }
+
+    public static <T> ApiResponse<T> error(String message, String errorCode) {
+        return new ApiResponse<>(false, message, null, LocalDateTime.now(), errorCode);
+    }
+}

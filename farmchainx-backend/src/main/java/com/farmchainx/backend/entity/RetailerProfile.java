@@ -11,7 +11,7 @@ public class RetailerProfile {
     private Long id;
 
     @OneToOne(optional = false)
-    @JoinColumn(name = "user_id", unique = true)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true)
     private User user;
 
     private String shopName;

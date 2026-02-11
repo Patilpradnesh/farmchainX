@@ -40,7 +40,7 @@ public class AdminService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setStatus(status);
         userRepository.save(user);
-        auditService.logAction("USER_STATUS_UPDATE", getCurrentUser(), user);
+        auditService.logAction("USER_STATUS_UPDATE", getCurrentUser(), "User ID: " + userId + ", New Status: " + status);
     }
 
     public List<UserDto> getUsersByRole(Role role) {
@@ -65,6 +65,18 @@ public class AdminService {
                 .orElseThrow(() -> new RuntimeException("Current user not found"));
     }
 
+    public List<UserDto> getAllUsers() {
+        checkAdmin();
+        return userRepository.findAll()
+                .stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
     private UserDto toDto(User user) {
         return new UserDto(
                 user.getId(),

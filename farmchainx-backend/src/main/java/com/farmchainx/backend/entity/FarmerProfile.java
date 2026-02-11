@@ -1,18 +1,24 @@
 package com.farmchainx.backend.entity;
+import com.farmchainx.backend.enums.Status;
 
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "farmer_profiles")
-public class FarmerProfile extends User {
+public class FarmerProfile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne(optional = false)
-    @JoinColumn(name = "user_id", unique = true)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true)
     private User user;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status verificationStatus;
+
 
     private String farmName;
     private String location;
@@ -59,4 +65,13 @@ public class FarmerProfile extends User {
     public void setLandArea(Double landArea) {
         this.landArea = landArea;
     }
+
+    public Status getVerificationStatus() {
+        return verificationStatus;
+    }
+
+    public void setVerificationStatus(Status verificationStatus) {
+        this.verificationStatus = verificationStatus;
+    }
+
 }

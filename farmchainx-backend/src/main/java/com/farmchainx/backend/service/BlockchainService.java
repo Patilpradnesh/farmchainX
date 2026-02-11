@@ -18,12 +18,14 @@ public class BlockchainService {
 
     public String registerOnBlockchain(String data) {
         String hash = generateHash(data);
-        repository.save(new BlockchainRecord(hash, data));
+        BlockchainRecord record = new BlockchainRecord();
+        record.setTransactionHash(hash);
+        repository.save(record);
         return hash;
     }
 
     public BlockchainRecord getRecord(String hash) {
-        return repository.findByHash(hash)
+        return repository.findByTransactionHash(hash)
                 .orElseThrow(() -> new RuntimeException("Blockchain record not found"));
     }
 
