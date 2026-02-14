@@ -1,5 +1,6 @@
 package com.farmchainx.backend.controller;
 
+import com.farmchainx.backend.common.dto.ApiResponse;
 import com.farmchainx.backend.dto.CropCreateRequest;
 import com.farmchainx.backend.dto.CropCreateResponse;
 import com.farmchainx.backend.dto.CropRequest;
@@ -27,7 +28,7 @@ public class CropController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerCrop(@Valid @RequestBody CropCreateRequest request) {
+    public ResponseEntity<ApiResponse<CropCreateResponse>> registerCrop(@Valid @RequestBody CropCreateRequest request) {
         System.out.println("🌾 CROP REGISTRATION REQUEST RECEIVED:");
         System.out.println("   Crop Name: " + request.getCropName());
         System.out.println("   Quantity: " + request.getQuantity());
@@ -37,40 +38,50 @@ public class CropController {
         try {
             Crop crop = cropService.registerCrop(request);
             System.out.println("✅ CROP REGISTRATION SUCCESS - ID: " + crop.getId());
-            return ResponseEntity.ok(new CropCreateResponse(crop.getId(), crop.getBlockchainHash()));
+            CropCreateResponse response = new CropCreateResponse(crop.getId(), crop.getBlockchainHash());
+            return ResponseEntity.ok(ApiResponse.success("Crop registered successfully", response));
         } catch (RuntimeException e) {
             System.err.println("❌ CROP REGISTRATION RUNTIME ERROR: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             System.err.println("❌ CROP REGISTRATION ERROR: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", "Internal server error: " + e.getMessage()));
+            return ResponseEntity.status(500).body(ApiResponse.error("Internal server error: " + e.getMessage()));
         }
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Void> addCrop(@RequestBody CropRequest request, @RequestParam String farmerEmail) {
-        cropService.addCrop(request, farmerEmail);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApiResponse<Void>> addCrop(@RequestBody CropRequest request, @RequestParam String farmerEmail) {
+        try {
+            cropService.addCrop(request, farmerEmail);
+            return ResponseEntity.ok(ApiResponse.success("Crop added successfully", null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @GetMapping("/test")
-    public ResponseEntity<Map<String, String>> testEndpoint() {
+    public ResponseEntity<ApiResponse<Map<String, String>>> testEndpoint() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth != null ? auth.getName() : "No authentication";
 
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Crop controller is working");
-        response.put("timestamp", LocalDateTime.now().toString());
-        response.put("authenticated_user", email);
+        Map<String, String> data = new HashMap<>();
+        data.put("message", "Crop controller is working");
+        data.put("timestamp", LocalDateTime.now().toString());
+        data.put("authenticated_user", email);
 
         System.out.println("🧪 TEST ENDPOINT CALLED - User: " + email);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success("Test successful", data));
     }
 
     @GetMapping("/trace/{hash}")
-    public CropTraceResponse trace(@PathVariable String hash) {
-        return cropService.traceCrop(hash);
+    public ResponseEntity<ApiResponse<CropTraceResponse>> trace(@PathVariable String hash) {
+        try {
+            CropTraceResponse response = cropService.traceCrop(hash);
+            return ResponseEntity.ok(ApiResponse.success("Crop traced successfully", response));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 }

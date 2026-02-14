@@ -1,5 +1,6 @@
 package com.farmchainx.backend.controller;
 
+import com.farmchainx.backend.common.dto.ApiResponse;
 import com.farmchainx.backend.service.NotificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -20,40 +21,60 @@ public class NotificationController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<List<NotificationService.Notification>> getMyNotifications() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName();
-        return ResponseEntity.ok(notificationService.getUserNotifications(email));
+    public ResponseEntity<ApiResponse<List<NotificationService.Notification>>> getMyNotifications() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String email = auth.getName();
+            return ResponseEntity.ok(ApiResponse.success("My notifications retrieved", notificationService.getUserNotifications(email)));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @GetMapping("/unread")
-    public ResponseEntity<List<NotificationService.Notification>> getUnreadNotifications() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName();
-        return ResponseEntity.ok(notificationService.getUnreadNotifications(email));
+    public ResponseEntity<ApiResponse<List<NotificationService.Notification>>> getUnreadNotifications() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String email = auth.getName();
+            return ResponseEntity.ok(ApiResponse.success("Unread notifications retrieved", notificationService.getUnreadNotifications(email)));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @PutMapping("/{notificationId}/read")
-    public ResponseEntity<Map<String, String>> markAsRead(@PathVariable String notificationId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName();
-        notificationService.markAsRead(email, notificationId);
-        return ResponseEntity.ok(Map.of("status", "marked as read"));
+    public ResponseEntity<ApiResponse<String>> markAsRead(@PathVariable String notificationId) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String email = auth.getName();
+            notificationService.markAsRead(email, notificationId);
+            return ResponseEntity.ok(ApiResponse.success("Notification marked as read", null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @PutMapping("/mark-all-read")
-    public ResponseEntity<Map<String, String>> markAllAsRead() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName();
-        notificationService.markAllAsRead(email);
-        return ResponseEntity.ok(Map.of("status", "all notifications marked as read"));
+    public ResponseEntity<ApiResponse<String>> markAllAsRead() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String email = auth.getName();
+            notificationService.markAllAsRead(email);
+            return ResponseEntity.ok(ApiResponse.success("All notifications marked as read", null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @GetMapping("/count/unread")
-    public ResponseEntity<Map<String, Integer>> getUnreadCount() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName();
-        int count = notificationService.getUnreadNotifications(email).size();
-        return ResponseEntity.ok(Map.of("count", count));
+    public ResponseEntity<ApiResponse<Map<String, Integer>>> getUnreadCount() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String email = auth.getName();
+            int count = notificationService.getUnreadNotifications(email).size();
+            return ResponseEntity.ok(ApiResponse.success("Unread count retrieved", Map.of("count", count)));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.farmchainx.backend.controller;
 
+import com.farmchainx.backend.common.dto.ApiResponse;
 import com.farmchainx.backend.dto.OrderCreateRequest;
 import com.farmchainx.backend.entity.Order;
 import com.farmchainx.backend.entity.User;
@@ -30,94 +31,135 @@ public class OrderController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Order> createOrder(@RequestBody OrderCreateRequest request) {
-        Order order = orderService.createOrder(
-                request.getCropId(),
-                request.getRequestedQuantity(),
-                request.getOfferedPrice(),
-                request.getDeliveryAddress(),
-                request.getNotes()
-        );
-        return ResponseEntity.ok(order);
+    public ResponseEntity<ApiResponse<Order>> createOrder(@RequestBody OrderCreateRequest request) {
+        try {
+            Order order = orderService.createOrder(
+                    request.getCropId(),
+                    request.getRequestedQuantity(),
+                    request.getOfferedPrice(),
+                    request.getDeliveryAddress(),
+                    request.getNotes()
+            );
+            return ResponseEntity.ok(ApiResponse.success("Order created successfully", order));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @PutMapping("/{orderId}/accept")
-    public ResponseEntity<String> acceptOrder(@PathVariable Long orderId) {
-        orderService.acceptOrder(orderId);
-        return ResponseEntity.ok("Order accepted");
+    public ResponseEntity<ApiResponse<String>> acceptOrder(@PathVariable Long orderId) {
+        try {
+            orderService.acceptOrder(orderId);
+            return ResponseEntity.ok(ApiResponse.success("Order accepted", null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @PutMapping("/{orderId}/reject")
-    public ResponseEntity<String> rejectOrder(@PathVariable Long orderId,
+    public ResponseEntity<ApiResponse<String>> rejectOrder(@PathVariable Long orderId,
                                              @RequestParam(required = false) String reason) {
-        orderService.rejectOrder(orderId, reason != null ? reason : "No reason provided");
-        return ResponseEntity.ok("Order rejected");
+        try {
+            orderService.rejectOrder(orderId, reason != null ? reason : "No reason provided");
+            return ResponseEntity.ok(ApiResponse.success("Order rejected", null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @PutMapping("/{orderId}/ship")
-    public ResponseEntity<String> shipOrder(@PathVariable Long orderId) {
-        orderService.shipOrder(orderId);
-        return ResponseEntity.ok("Order shipped");
+    public ResponseEntity<ApiResponse<String>> shipOrder(@PathVariable Long orderId) {
+        try {
+            orderService.shipOrder(orderId);
+            return ResponseEntity.ok(ApiResponse.success("Order shipped", null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @PutMapping("/{orderId}/complete")
-    public ResponseEntity<String> completeOrder(@PathVariable Long orderId) {
-        orderService.completeOrder(orderId);
-        return ResponseEntity.ok("Order completed");
+    public ResponseEntity<ApiResponse<String>> completeOrder(@PathVariable Long orderId) {
+        try {
+            orderService.completeOrder(orderId);
+            return ResponseEntity.ok(ApiResponse.success("Order completed", null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @PutMapping("/{orderId}/cancel")
-    public ResponseEntity<String> cancelOrder(@PathVariable Long orderId) {
-        orderService.cancelOrder(orderId);
-        return ResponseEntity.ok("Order cancelled");
+    public ResponseEntity<ApiResponse<String>> cancelOrder(@PathVariable Long orderId) {
+        try {
+            orderService.cancelOrder(orderId);
+            return ResponseEntity.ok(ApiResponse.success("Order cancelled", null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @GetMapping("/my")
-    public ResponseEntity<List<Order>> getMyOrders() {
-        List<Order> orders = orderService.getMyOrders();
-        return ResponseEntity.ok(orders);
+    public ResponseEntity<ApiResponse<List<Order>>> getMyOrders() {
+        try {
+            List<Order> orders = orderService.getMyOrders();
+            return ResponseEntity.ok(ApiResponse.success("Orders retrieved", orders));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @GetMapping("/status/{state}")
-    public ResponseEntity<List<Order>> getOrdersByStatus(@PathVariable OrderState state) {
-        List<Order> orders = orderService.getOrdersByStatus(state);
-        return ResponseEntity.ok(orders);
+    public ResponseEntity<ApiResponse<List<Order>>> getOrdersByStatus(@PathVariable OrderState state) {
+        try {
+            List<Order> orders = orderService.getOrdersByStatus(state);
+            return ResponseEntity.ok(ApiResponse.success("Orders retrieved", orders));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @GetMapping("/{orderId}/validate/{newState}")
-    public ResponseEntity<Map<String, Boolean>> validateOrderTransition(
+    public ResponseEntity<ApiResponse<Map<String, Boolean>>> validateOrderTransition(
             @PathVariable Long orderId,
             @PathVariable OrderState newState) {
-        boolean isValid = orderService.validateOrderTransition(orderId, newState);
-        return ResponseEntity.ok(Map.of("valid", isValid));
+        try {
+            boolean isValid = orderService.validateOrderTransition(orderId, newState);
+            return ResponseEntity.ok(ApiResponse.success("Validation result", Map.of("valid", isValid)));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @GetMapping("/dashboard/stats")
-    public ResponseEntity<Map<String, Object>> getOrderStats() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getOrderStats() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String email = auth.getName();
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<Order> buyerOrders = orderRepository.findByBuyer(user);
-        List<Order> sellerOrders = orderRepository.findBySeller(user);
+            List<Order> buyerOrders = orderRepository.findByBuyer(user);
+            List<Order> sellerOrders = orderRepository.findBySeller(user);
 
-        long totalBuyerOrders = buyerOrders.size();
-        long totalSellerOrders = sellerOrders.size();
-        long activeBuyerOrders = buyerOrders.stream()
-                .filter(o -> o.getOrderState() != OrderState.COMPLETED && o.getOrderState() != OrderState.CANCELLED)
-                .count();
-        long activeSellerOrders = sellerOrders.stream()
-                .filter(o -> o.getOrderState() != OrderState.COMPLETED && o.getOrderState() != OrderState.CANCELLED)
-                .count();
+            long totalBuyerOrders = buyerOrders.size();
+            long totalSellerOrders = sellerOrders.size();
+            long activeBuyerOrders = buyerOrders.stream()
+                    .filter(o -> o.getOrderState() != OrderState.COMPLETED && o.getOrderState() != OrderState.CANCELLED)
+                    .count();
+            long activeSellerOrders = sellerOrders.stream()
+                    .filter(o -> o.getOrderState() != OrderState.COMPLETED && o.getOrderState() != OrderState.CANCELLED)
+                    .count();
 
-        return ResponseEntity.ok(Map.of(
-                "totalBuyerOrders", totalBuyerOrders,
-                "totalSellerOrders", totalSellerOrders,
-                "activeBuyerOrders", activeBuyerOrders,
-                "activeSellerOrders", activeSellerOrders,
-                "completedOrders", buyerOrders.stream().filter(o -> o.getOrderState() == OrderState.COMPLETED).count() +
-                                  sellerOrders.stream().filter(o -> o.getOrderState() == OrderState.COMPLETED).count()
-        ));
+            Map<String, Object> stats = Map.of(
+                    "totalBuyerOrders", totalBuyerOrders,
+                    "totalSellerOrders", totalSellerOrders,
+                    "activeBuyerOrders", activeBuyerOrders,
+                    "activeSellerOrders", activeSellerOrders,
+                    "completedOrders", buyerOrders.stream().filter(o -> o.getOrderState() == OrderState.COMPLETED).count() +
+                                      sellerOrders.stream().filter(o -> o.getOrderState() == OrderState.COMPLETED).count()
+            );
+            return ResponseEntity.ok(ApiResponse.success("Order stats retrieved", stats));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 }

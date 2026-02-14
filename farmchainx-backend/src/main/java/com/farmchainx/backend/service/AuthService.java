@@ -11,6 +11,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.farmchainx.backend.dto.LoginResult;
+import com.farmchainx.backend.dto.UserDto;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 public class AuthService {
@@ -127,5 +130,13 @@ public class AuthService {
         // Generate JWT token and return result
         String token = jwtUtil.generateToken(user);
         return new LoginResult(token, user);
+    }
+
+    public UserDto getCurrentUserDto() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return new UserDto(user.getId(), user.getEmail(), user.getRole(), user.getStatus());
     }
 }

@@ -6,7 +6,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -18,17 +17,19 @@ public class CorsConfig {
 
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:3000",
+                "http://localhost:3001", // added to support alternate dev origin
                 "http://localhost:5173"
         ));
 
         configuration.setAllowedMethods(List.of(
-                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+                "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
         ));
 
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setExposedHeaders(List.of("Authorization"));
+        // Explicitly allow the headers the frontend will send (Authorization for JWT)
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With"));
+        configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
 
-        //  JWT DOES NOT NEED CREDENTIALS
+        // JWT in Authorization header doesn't require credentials/cookies
         configuration.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source =
@@ -37,5 +38,3 @@ public class CorsConfig {
         return source;
     }
 }
-
-

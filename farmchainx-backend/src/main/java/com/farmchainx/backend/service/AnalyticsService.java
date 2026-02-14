@@ -12,6 +12,9 @@ import com.farmchainx.backend.repository.UserRepository;
 import com.farmchainx.backend.repository.DisputeRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -114,6 +117,92 @@ public class AnalyticsService {
                 additionalMetrics
         );
     }
+
+    // ------------------- New chart-friendly methods -------------------
+
+    // Resolve named timeframe to start/end LocalDateTime
+    public LocalDateTime[] resolveDateRange(String timeFrame, LocalDate startDate, LocalDate endDate) {
+        if (startDate != null && endDate != null) {
+            return new LocalDateTime[]{startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX)};
+        }
+        LocalDate today = LocalDate.now();
+        return switch (timeFrame == null ? "" : timeFrame.toLowerCase()) {
+            case "today" -> new LocalDateTime[]{today.atStartOfDay(), today.atTime(LocalTime.MAX)};
+            case "week" -> new LocalDateTime[]{today.minusDays(7).atStartOfDay(), today.atTime(LocalTime.MAX)};
+            case "month" -> new LocalDateTime[]{today.minusMonths(1).atStartOfDay(), today.atTime(LocalTime.MAX)};
+            case "year" -> new LocalDateTime[]{today.minusYears(1).atStartOfDay(), today.atTime(LocalTime.MAX)};
+            default -> new LocalDateTime[]{today.minusMonths(1).atStartOfDay(), today.atTime(LocalTime.MAX)}; // default 1 month
+        };
+    }
+
+    // Returns list of role-count pairs for charting
+    public List<Map<String, Object>> getUserCountByRole(LocalDateTime start, LocalDateTime end) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Role role : Role.values()) {
+            long cnt = userRepository.countByRoleAndCreatedAtBetween(role, start, end);
+            Map<String, Object> m = new HashMap<>();
+            m.put("role", role.name());
+            m.put("count", cnt);
+            result.add(m);
+        }
+        return result;
+    }
+
+    // Returns crop stats grouped by region and cropName
+    public List<Map<String, Object>> getCropStatsByRegion(LocalDateTime start, LocalDateTime end) {
+        List<Object[]> rows = cropRepository.findCropStatsByRegionAndName(start, end);
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (Object[] r : rows) {
+            String region = (String) r[0];
+            String cropName = (String) r[1];
+            Long cnt = (Long) r[2];
+            Double totalQty = (Double) r[3];
+            Map<String, Object> m = new HashMap<>();
+            m.put("region", region);
+            m.put("cropName", cropName);
+            m.put("count", cnt);
+            m.put("totalQuantity", totalQty);
+            out.add(m);
+        }
+        return out;
+    }
+
+    // Returns order stats grouped by region and buyer role
+    public Map<String, Object> getOrderOverview(LocalDateTime start, LocalDateTime end) {
+        Map<String, Object> out = new HashMap<>();
+        List<Object[]> byRegion = orderRepository.findOrderStatsByRegion(start, end);
+        List<Map<String, Object>> regionStats = new ArrayList<>();
+        for (Object[] r : byRegion) {
+            String region = (String) r[0];
+            Long cnt = (Long) r[1];
+            Double totalValue = (Double) r[2];
+            Map<String, Object> m = new HashMap<>();
+            m.put("region", region);
+            m.put("orders", cnt);
+            m.put("totalValue", totalValue);
+            regionStats.add(m);
+        }
+
+        List<Object[]> byRole = orderRepository.findOrderStatsByBuyerRole(start, end);
+        List<Map<String, Object>> roleStats = new ArrayList<>();
+        for (Object[] r : byRole) {
+            Object roleObj = r[0];
+            String role = roleObj != null ? roleObj.toString() : "UNKNOWN";
+            Long cnt = (Long) r[1];
+            Double totalValue = (Double) r[2];
+            Map<String, Object> m = new HashMap<>();
+            m.put("role", role);
+            m.put("orders", cnt);
+            m.put("totalValue", totalValue);
+            roleStats.add(m);
+        }
+
+        out.put("byRegion", regionStats);
+        out.put("byBuyerRole", roleStats);
+        return out;
+    }
+
+    // -----------------------------------------------------------------
 
     private String getColorForCropState(CropState state) {
         return switch (state) {
